@@ -34,7 +34,7 @@ class TusaLanger2013(GMPE):
     (not yet published in Jan 2015), in the frame of V3-2012 INGV-DPC Project.
 
     The GMPE derives from shallow (< 7km) earthquakes at Mt. Etna in the magnitude 
-    range 2.6<ML<4.4 for hypocentral distances < 15 km, and soil class B stations
+    range 2.6<ML<4.4 for epicentral distances < 15 km, and soil class B stations
     The functional form includes a distance and magnitude function.
     """
 
@@ -68,8 +68,8 @@ class TusaLanger2013(GMPE):
     #: Required rupture parameters are magnitude.
     REQUIRES_RUPTURE_PARAMETERS = set(('mag',))
 
-    #: Required distance measure is Rhypo
-    REQUIRES_DISTANCES = set(('rhypo',))
+    #: Required distance measure is repi
+    REQUIRES_DISTANCES = set(('repi',))
 
     def get_mean_and_stddevs(self, sites, rup, dists, imt, stddev_types):
         """
@@ -85,7 +85,7 @@ class TusaLanger2013(GMPE):
 	imean = (self._compute_magnitude(rup, C) +
                  self._compute_distance(rup, dists, C)) 
                          
-        istddevs = self._get_stddevs(C, stddev_types, dists.rhypo.shape[0])
+        istddevs = self._get_stddevs(C, stddev_types, dists.repi.shape[0])
 
         # convert from log10 to ln and from cm/s**2 to g
         mean = np.log((10.0 ** (imean - 2.0)) / g)
@@ -110,12 +110,12 @@ class TusaLanger2013(GMPE):
     def _compute_distance(self, rup, dists, C):
         """
         Compute the distance function:
-        ``c1 + c2 * (M-Mref) * log(sqrt(rhypo ** 2 + h ** 2)/Rref) -
-             c3*(sqrt(rhypo ** 2 + h ** 2)-Rref)``
+        ``c1 + c2 * (M-Mref) * log(sqrt(repi ** 2 + h ** 2)/Rref) -
+             c3*(sqrt(repi ** 2 + h ** 2)-Rref)``
         """
         mref = 3.6
         rref = 1.0
-        rval = np.sqrt(dists.rhypo ** 2 + C['h'] ** 2)
+        rval = np.sqrt(dists.repi ** 2 + C['h'] ** 2)
         return (C['c1'] + C['c2'] * (rup.mag - mref)) *\
             np.log10(rval / rref) + C['c3'] * (rval - rref)
 
