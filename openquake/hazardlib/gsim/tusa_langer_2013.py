@@ -31,45 +31,49 @@ from openquake.hazardlib.imt import PGA
 class TusaLanger2013(GMPE):
     """
     Implements GMPE ("INV7") developed by Giuseppina Tusa and Horst Langer 
-    (not yet published in Jan 2015), in the frame of V3-2012 INGV-DPC Project.
+    (not yet published in Apr 2015), in the frame of V3-2012 INGV-DPC Project 
+    as described on page 18 of "Analisi multi-disciplinare delle relazioni tra
+    strutture tettoniche e attivita vulcanica. Rapporto scientifico finale, 
+    Settembre 2013"
 
-    The GMPE derives from shallow (< 7km) earthquakes at Mt. Etna in the magnitude 
-    range 2.6<ML<4.4 for epicentral distances < 15 km, and soil class B stations
-    The functional form includes a distance and magnitude function.
+    The GMPE derives from shallow earthquakes at Mt. Etna in the magnitude 
+    range 2.5<ML<4.8 for epicentral distances < 15 km, and soil class B stations.
+    The functional form includes magnitude and distance functions
+
+    IMPORTANT: This GMPE was originally derived using epicentral distance (for 
+    which it passes nosetests using test tables provided by the authors); however, 
+    it has been modified below to consider hypocentral distance for the sake of 
+    experimenting with PSHA calculations in volcanic areas where topography is 
+    taken into consideration (hence dependence on vertical distance is required)
+
     """
 
     #: Supported tectonic region type is 'volcanic' because the
     #: equations have been derived from data from Etna (Sicily, Italy)
     DEFINED_FOR_TECTONIC_REGION_TYPE = const.TRT.VOLCANIC
 
-    #: Set of :mod:`intensity measure types <openquake.hazardlib.imt>`
-    #: this GSIM can calculate. A set should contain classes from module
-    #: :mod:`openquake.hazardlib.imt`.
+    #: Supported intensity measure types are PGA
     DEFINED_FOR_INTENSITY_MEASURE_TYPES = set([
         PGA
     ])
 
     #: Supported intensity measure component is the maximum of two
     #: horizontal components
-    #: :attr:`~openquake.hazardlib.const.IMC.GREATER_OF_TWO_HORIZONTAL
     DEFINED_FOR_INTENSITY_MEASURE_COMPONENT = const.IMC.GREATER_OF_TWO_HORIZONTAL
-
 
     #: Supported standard deviation types are total
     DEFINED_FOR_STANDARD_DEVIATION_TYPES = set([
         const.StdDev.TOTAL
     ])
 
-    #: Required site parameter is only Vs30 (used to distinguish rock
-    #: and stiff and soft soil).
+    #: No required site parameters since we only consider site class B 
     REQUIRES_SITES_PARAMETERS = set()
-
 
     #: Required rupture parameters are magnitude.
     REQUIRES_RUPTURE_PARAMETERS = set(('mag',))
 
-    #: Required distance measure is repi
-    REQUIRES_DISTANCES = set(('repi',))
+    #: Required distance measure is Rhypo
+    REQUIRES_DISTANCES = set(('rhypo',))
 
     def get_mean_and_stddevs(self, sites, rup, dists, imt, stddev_types):
         """
@@ -85,7 +89,7 @@ class TusaLanger2013(GMPE):
 	imean = (self._compute_magnitude(rup, C) +
                  self._compute_distance(rup, dists, C)) 
                          
-        istddevs = self._get_stddevs(C, stddev_types, dists.repi.shape[0])
+        istddevs = self._get_stddevs(C, stddev_types, dists.rhypo.shape[0])
 
         # convert from log10 to ln and from cm/s**2 to g
         mean = np.log((10.0 ** (imean - 2.0)) / g)
@@ -110,12 +114,12 @@ class TusaLanger2013(GMPE):
     def _compute_distance(self, rup, dists, C):
         """
         Compute the distance function:
-        ``c1 + c2 * (M-Mref) * log(sqrt(repi ** 2 + h ** 2)/Rref) -
-             c3*(sqrt(repi ** 2 + h ** 2)-Rref)``
+        ``c1 + c2 * (M-Mref) * log(sqrt(rhypo ** 2 + h ** 2)/Rref) -
+             c3*(sqrt(rhypo ** 2 + h ** 2)-Rref)``
         """
         mref = 3.6
         rref = 1.0
-        rval = np.sqrt(dists.repi ** 2 + C['h'] ** 2)
+        rval = np.sqrt(dists.rhypo ** 2 + C['h'] ** 2)
         return (C['c1'] + C['c2'] * (rup.mag - mref)) *\
             np.log10(rval / rref) + C['c3'] * (rval - rref)
 
@@ -130,10 +134,10 @@ class TusaLanger2013(GMPE):
         return C['e1'] + (C['b1'] * (rup.mag)) +\
                 (C['b2'] * (rup.mag) ** 2)
         
-  
+    #: coefficient table provided in "PerRaff&Laur+lpf.xls", sigma given in log
     COEFFS = CoeffsTable(sa_damping=5, table="""
     IMT	e1	c1      c2      h      c3      b1      b2		SigmaTot
     pga	1.068	-3.946	0.09056 3.881  0.0784  0.6661  -0.008909	0.354
     """) 
 
-        # B1      B4      B5      h      b7      b2      b3       "epsilon"       
+        # B1     B4     B5      h      b7      b2      b3              "epsilon"       
