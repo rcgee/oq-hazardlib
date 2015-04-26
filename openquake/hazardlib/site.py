@@ -114,7 +114,7 @@ class SiteCollection(object):
         A list of instances of :class:`Site` class.
     """
     @classmethod
-    def from_points(cls, lons, lats, depths, site_ids, sitemodel):  ######
+    def from_points(cls, lons, lats, site_ids, sitemodel):
         """
         Build the site collection from
 
@@ -131,7 +131,7 @@ class SiteCollection(object):
             reference_depth_to_1pt0km_per_sec,
             reference_depth_to_2pt5km_per_sec.
         """
-        assert len(lons) == len(lats) == len(depths) == len(site_ids), (
+        assert len(lons) == len(lats) == len(site_ids), (
             len(lons), len(lats), len(site_ids))
         self = cls.__new__(cls)
         self.complete = self
@@ -139,7 +139,6 @@ class SiteCollection(object):
         self.sids = numpy.array(site_ids, int)
         self.lons = numpy.array(lons)
         self.lats = numpy.array(lats)
-	self.depths = numpy.array(depths) ######
         self._vs30 = sitemodel.reference_vs30_value
         self._vs30measured = sitemodel.reference_vs30_type == 'measured'
         self._z1pt0 = sitemodel.reference_depth_to_1pt0km_per_sec
@@ -152,22 +151,15 @@ class SiteCollection(object):
         self.sids = numpy.zeros(n, dtype=int)
         self.lons = numpy.zeros(n, dtype=float)
         self.lats = numpy.zeros(n, dtype=float)
-	self.depths=numpy.zeros(n, dtype=float) ######
         self._vs30 = numpy.zeros(n, dtype=float)
         self._vs30measured = numpy.zeros(n, dtype=bool)
         self._z1pt0 = numpy.zeros(n, dtype=float)
         self._z2pt5 = numpy.zeros(n, dtype=float)
 
-	#if any sites.depths is not None:         ######
-	#	self.depths=numpy.zeros(n, dtype=float)
-	#else:
-	#	self.depths=numpy.array(None)
-
         for i in xrange(n):
             self.sids[i] = sites[i].id
             self.lons[i] = sites[i].location.longitude
             self.lats[i] = sites[i].location.latitude
-	    self.depths[i] = sites[i].location.depth  ###### only place we see "depth"
             self._vs30[i] = sites[i].vs30
             self._vs30measured[i] = sites[i].vs30measured
             self._z1pt0[i] = sites[i].z1pt0
@@ -186,8 +178,8 @@ class SiteCollection(object):
     @property
     def mesh(self):
         """Return a mesh with the given lons and lats"""
-        return Mesh(self.lons, self.lats, self.depths)
-	#return Mesh(self.lons, self.lats, depths=None)   ####
+        return Mesh(self.lons, self.lats, depths=None)
+
     @property
     def indices(self):
         """The full set of indices from 0 to total_sites - 1"""
