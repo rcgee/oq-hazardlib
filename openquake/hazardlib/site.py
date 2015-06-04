@@ -167,7 +167,7 @@ class SiteCollection(object):
             self.sids[i] = sites[i].id
             self.lons[i] = sites[i].location.longitude
             self.lats[i] = sites[i].location.latitude
-	    self.depths[i] = sites[i].location.depth  ###### only place we see "depth"
+	    self.depths[i] = sites[i].location.depth  #####"Depth" (not "depths") is a parameter of class Point
             self._vs30[i] = sites[i].vs30
             self._vs30measured[i] = sites[i].vs30measured
             self._z1pt0[i] = sites[i].z1pt0
