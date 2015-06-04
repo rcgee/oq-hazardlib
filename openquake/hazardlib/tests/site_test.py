@@ -74,7 +74,7 @@ class SiteTestCase(unittest.TestCase):
 
 class SiteCollectionCreationTestCase(unittest.TestCase):
     def test_from_sites(self):
-        s1 = Site(location=Point(10, 20, 30), #added 30
+        s1 = Site(location=Point(10, 20, 30), 
                   vs30=1.2, vs30measured=True,
                   z1pt0=3.4, z2pt5=5.6)
         s2 = Site(location=Point(-1.2, -3.4, -5.6),
@@ -87,8 +87,7 @@ class SiteCollectionCreationTestCase(unittest.TestCase):
         self.assertTrue((cll.z2pt5 == [5.6, 88.9]).all())
         self.assertTrue((cll.mesh.lons == [10, -1.2]).all())
         self.assertTrue((cll.mesh.lats == [20, -3.4]).all())
-	self.assertTrue((cll.mesh.depths == [30, -5.6]).all()) # 
-        #self.assertIs(cll.mesh.depths, None)
+	self.assertTrue((cll.mesh.depths == [30, -5.6]).all()) 
         for arr in (cll.vs30, cll.z1pt0, cll.z2pt5):
             self.assertIsInstance(arr, numpy.ndarray)
             self.assertEqual(arr.flags.writeable, False)
@@ -101,7 +100,7 @@ class SiteCollectionCreationTestCase(unittest.TestCase):
     def test_from_points(self):
         lons = [10, -1.2]
         lats = [20, -3.4]
-	depths = [1.0, 2.0] #
+	depths = [1.0, 2.0] 
         cll = SiteCollection.from_points(lons, lats, depths, [1, 2], SiteModelParam())
         assert_eq(cll.vs30, [1.2, 1.2])
         assert_eq(cll.vs30measured, [True, True])
@@ -109,7 +108,7 @@ class SiteCollectionCreationTestCase(unittest.TestCase):
         assert_eq(cll.z2pt5, [5.6, 5.6])
         assert_eq(cll.mesh.lons, [10, -1.2])
         assert_eq(cll.mesh.lats, [20, -3.4])
-        assert_eq(cll.mesh.depths, [1.0, 2.0]) #was None
+        assert_eq(cll.mesh.depths, [1.0, 2.0]) 
         for arr in (cll.vs30, cll.z1pt0, cll.z2pt5):
             self.assertIsInstance(arr, numpy.ndarray)
             self.assertEqual(arr.dtype, float)
