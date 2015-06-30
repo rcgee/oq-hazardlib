@@ -23,6 +23,10 @@ from openquake.hazardlib.gsim.tusa_langer_2013 import TusaLanger2013
 from openquake.hazardlib.tests.gsim.utils import BaseGSIMTestCase
 import numpy
 
+if TusaLanger2013.REQUIRES_DISTANCES == {'rhypo'}:
+    raise Exception, 'change GMPE back to repi and the test tables will pass'
+       
+
 class TusaLanger2013TestCase(BaseGSIMTestCase):
     GSIM_CLASS = TusaLanger2013
 
