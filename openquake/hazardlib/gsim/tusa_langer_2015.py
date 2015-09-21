@@ -180,11 +180,11 @@ class TusaLanger2015(GMPE):
 	return ssa, ssb, ssd
         
     # coefficient table for SA provided in "SpectralAccXLaura.xlsx" and for PGA in "SpectralAccXRobin.xlsx"
-    # sigma values provided in ln and converted to log (below)
+    # sigma values provided in log (below)
 
     COEFFS = CoeffsTable(sa_damping=5, table="""
     IMT		e1	c1      c2      h      c3      		b1      b2	sA	sB	sD 	SigmaTot
-    pga		-0.0333	-2.2379	0.3107	2.696	-0.0062911	0.9542	-0.0829	0	0	0	0.4017 
+    pga		0.329	-2.111	0.039	1.553	0.006		0.105	0.076	0	0.450	0.457	0.394 
     0.10	0.8594	-2.2258	0.0066	1.8689	0.006867	0.0525	0.0790	0	0.41397	0.42120	0.4424	
     0.20	1.0619	-2.2684	0.0194	2.6969	0.007245	0.0418	0.0804	0	0.47176	0.56672	0.3960
     0.25	0.9928	-2.2318	0.0067	3.1724	0.006746	0.0316	0.0904	0	0.47069	0.51751	0.3779

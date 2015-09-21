@@ -30,10 +30,10 @@ class TusaLanger2015TestCase(BaseGSIMTestCase):
 
     def test_mean(self):
         self.check('TL15/TusaLanger2015_MEAN.csv',
-		max_discrep_percentage=0.3)  
+		max_discrep_percentage=0.1)  
 
     def test_std_total(self):
         self.check('TL15/TusaLanger2015_STD_TOTAL.csv',
-                    max_discrep_percentage=0.2)
+                    max_discrep_percentage=0.1)
 
 
