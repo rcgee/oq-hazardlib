@@ -17,13 +17,14 @@
 Module :mod:`openquake.hazardlib.source.simple_fault` defines
 :class:`SimpleFaultSource`.
 """
+from __future__ import division
 import math
-import numpy
+from openquake.baselib.python3compat import range
 from openquake.hazardlib.source.base import ParametricSeismicSource
 from openquake.hazardlib.geo.surface.simple_fault import SimpleFaultSurface
 from openquake.hazardlib.geo.nodalplane import NodalPlane
 from openquake.hazardlib.source.rupture import ParametricProbabilisticRupture
-from openquake.hazardlib.slots import with_slots
+from openquake.baselib.slots import with_slots
 
 
 @with_slots
@@ -43,10 +44,12 @@ class SimpleFaultSource(ParametricSeismicSource):
     :param dip:
         Angle between earth surface and fault plane in decimal degrees.
     :param rake:
+        the direction of hanging wall relative to the foot wall.
+    :param rupture_slip_direction:
         Angle describing rupture propagation direction in decimal degrees.
-    :param hypo_loc:
+    :param hypo_list:
         Array describing the relative position of the hypocentre on the rupture
-        surface. Each line represents an hypocentral position defined in terms
+        surface. Each line represents a hypocentral position defined in terms
         of the relative distance along strike and dip (from the upper, left
         corner of the fault surface i.e. the corner which results from the
         projection at depth of the first vertex of the fault trace) and the
@@ -57,8 +60,18 @@ class SimpleFaultSource(ParametricSeismicSource):
         1/4 of the fault length and at 1/4 of the fault width along the dip and
         occurs with a weight of 0.3, the other one is at 3/4 of fault length
         along strike and at 3/4 of fault width along strike with a weight of
-        0.7. The numpy array would be entered as numpy.array([0.25, 0.25, 0.3],
-        [0.75, 0.75, 0.7]).
+        0.7. The numpy array would be entered as numpy.array([[0.25, 0.25, 0.3],
+        [0.75, 0.75, 0.7]]).
+    :param slip_list:
+        Array describing the rupture slip direction, which desribes the rupture
+        propagation direction on the rupture surface. Each line represents a
+        rupture slip direction and the corresponding weight. Example 1: one
+        single rupture slip direction with angle 90 degree will be described
+        by the following array[(90, 1.0)]. Example 2: two possible rupture slip
+        directions are admitted for a rupture. One slip direction is at 90
+        degree with a weight of 0.7, the other one is at 135 degree with a
+        weight of 0.3. The numpy array would be entered as numpy.array(
+        [[90, 0.7], [135, 0.3]]).
 
     See also :class:`openquake.hazardlib.source.base.ParametricSeismicSource`
     for description of other parameters.
@@ -69,7 +82,8 @@ class SimpleFaultSource(ParametricSeismicSource):
         for the lowest magnitude value.
     """
     __slots__ = ParametricSeismicSource.__slots__ + '''upper_seismogenic_depth
-    lower_seismogenic_depth fault_trace dip rake hypo_list'''.split()
+    lower_seismogenic_depth fault_trace dip rake hypo_list
+    slip_list'''.split()
 
     def __init__(self, source_id, name, tectonic_region_type,
                  mfd, rupture_mesh_spacing,
@@ -77,7 +91,7 @@ class SimpleFaultSource(ParametricSeismicSource):
                  temporal_occurrence_model,
                  # simple fault specific parameters
                  upper_seismogenic_depth, lower_seismogenic_depth,
-                 fault_trace, dip, rake, hypo_list=numpy.array(None)):
+                 fault_trace, dip, rake, hypo_list=(), slip_list=()):
         super(SimpleFaultSource, self).__init__(
             source_id, name, tectonic_region_type, mfd, rupture_mesh_spacing,
             magnitude_scaling_relationship, rupture_aspect_ratio,
@@ -98,7 +112,14 @@ class SimpleFaultSource(ParametricSeismicSource):
         min_mag, max_mag = self.mfd.get_min_max_mag()
         cols_rows = self._get_rupture_dimensions(float('inf'), float('inf'),
                                                  min_mag)
+        self.slip_list = slip_list
         self.hypo_list = hypo_list
+
+        if (len(self.hypo_list) and not len(self.slip_list) or
+           not len(self.hypo_list) and len(self.slip_list)):
+            raise ValueError('hypo_list and slip_list have to be both given '
+                             'or neither given')
+
         if 1 in cols_rows:
             raise ValueError('mesh spacing %s is too high to represent '
                              'ruptures of magnitude %s' %
@@ -155,12 +176,12 @@ class SimpleFaultSource(ParametricSeismicSource):
 
             occurrence_rate = mag_occ_rate / float(num_rup)
 
-            for first_row in xrange(num_rup_along_width):
-                for first_col in xrange(num_rup_along_length):
+            for first_row in range(num_rup_along_width):
+                for first_col in range(num_rup_along_length):
                     mesh = whole_fault_mesh[first_row: first_row + rup_rows,
                                             first_col: first_col + rup_cols]
 
-                    if self.hypo_list.size == 1:
+                    if not len(self.hypo_list) and not len(self.slip_list):
 
                         hypocenter = mesh.get_middle_point()
                         occurrence_rate_hypo = occurrence_rate
@@ -174,22 +195,23 @@ class SimpleFaultSource(ParametricSeismicSource):
                         )
                     else:
                         for hypo in self.hypo_list:
+                            for slip in self.slip_list:
+                                surface = SimpleFaultSurface(mesh)
+                                hypocenter = surface.get_hypo_location(
+                                    self.rupture_mesh_spacing, hypo[:2])
+                                occurrence_rate_hypo = occurrence_rate * \
+                                    hypo[2] * slip[1]
+                                rupture_slip_direction = slip[0]
 
-                            surface = SimpleFaultSurface(mesh)
-                            hypocenter = surface.get_hypo_location(
-                                mesh, self.rupture_mesh_spacing,
-                                hypo[:2])
+                                yield ParametricProbabilisticRupture(
+                                    mag, self.rake, self.tectonic_region_type,
+                                    hypocenter, surface, type(self),
+                                    occurrence_rate_hypo,
+                                    self.temporal_occurrence_model,
+                                    rupture_slip_direction
+                                )
 
-                            occurrence_rate_hypo = occurrence_rate * \
-                                hypo[2]
-
-                            yield ParametricProbabilisticRupture(
-                                mag, self.rake, self.tectonic_region_type,
-                                hypocenter, surface, type(self),
-                                occurrence_rate_hypo,
-                                self.temporal_occurrence_model
-                            )
-
+    # TODO: fix the count in the case of hypo_list and slip_list
     def count_ruptures(self):
         """
         See :meth:
@@ -206,8 +228,7 @@ class SimpleFaultSource(ParametricSeismicSource):
         counts = 0
         for (mag, mag_occ_rate) in self.get_annual_occurrence_rates():
             rup_cols, rup_rows = self._get_rupture_dimensions(
-                fault_length, fault_width, mag
-            )
+                fault_length, fault_width, mag)
             num_rup_along_length = mesh_cols - rup_cols + 1
             num_rup_along_width = mesh_rows - rup_rows + 1
             counts += num_rup_along_length * num_rup_along_width
@@ -232,8 +253,7 @@ class SimpleFaultSource(ParametricSeismicSource):
         is considered to cover the whole fault.
         """
         area = self.magnitude_scaling_relationship.get_median_area(
-            mag, self.rake
-        )
+            mag, self.rake)
         rup_length = math.sqrt(area * self.rupture_aspect_ratio)
         rup_width = area / rup_length
 

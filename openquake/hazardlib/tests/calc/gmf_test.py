@@ -60,7 +60,6 @@ class FakeGSIMInterIntraStdDevs(BaseFakeGSIM):
 
     def get_mean_and_stddevs(gsim, mean, std_inter, std_intra, imt,
                              stddev_types):
-        assert imt is gsim.testcase.imt1 or imt is gsim.testcase.imt2
         if gsim.expect_stddevs:
             gsim.testcase.assertEqual(
                 stddev_types,
@@ -86,7 +85,6 @@ class FakeGSIMTotalStdDev(BaseFakeGSIM):
 
     def get_mean_and_stddevs(gsim, mean, std_total, not_used, imt,
                              stddev_types):
-        assert imt is gsim.testcase.imt1 or imt is gsim.testcase.imt2
         if gsim.expect_stddevs:
             gsim.testcase.assertEqual(stddev_types, [const.StdDev.TOTAL])
 
@@ -269,7 +267,7 @@ class GMFCalcNoCorrelationTestCase(BaseGMFCalcTestCase):
         self.assertLess(intensity[4].std(), self.stddev45)
         self.assertLess(intensity[5].std(), self.stddev67)
         self.assertLess(intensity[6].std(), self.stddev67)
-        for i in xrange(7):
+        for i in range(7):
             self.assertGreater(intensity[i].std(), 0)
 
     def test_no_filtering_zero_truncation(self):
@@ -280,7 +278,7 @@ class GMFCalcNoCorrelationTestCase(BaseGMFCalcTestCase):
                                     realizations=100,
                                     truncation_level=truncation_level)
         for intensity in gmfs[self.imt1], gmfs[self.imt2]:
-            for i in xrange(7):
+            for i in range(7):
                 self.assertEqual(intensity[i].std(), 0)
             self.assertEqual(intensity[0].mean(), self.mean1)
             self.assertEqual(intensity[1].mean(), self.mean2)
@@ -320,7 +318,7 @@ class GMFCalcNoCorrelationTestCase(BaseGMFCalcTestCase):
             realizations=100
         )
         for intensity in gmfs[self.imt1], gmfs[self.imt2]:
-            for i in xrange(7):
+            for i in range(7):
                 self.assertEqual(intensity[i].std(), 0)
 
             self.assertEqual(intensity[0].mean(), 0)
@@ -414,9 +412,7 @@ class GMFCalcCorrelatedTestCase(BaseGMFCalcTestCase):
             ground_motion_fields(
                 self.rupture, self.sites, [self.imt1], gsim,
                 truncation_level=None, realizations=6000,
-                correlation_model=cormo,
-           )
-
+                correlation_model=cormo)
 
     def test_rupture_site_filtering(self):
         mean = 10
