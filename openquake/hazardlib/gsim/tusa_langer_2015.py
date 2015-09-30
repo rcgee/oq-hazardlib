@@ -91,8 +91,8 @@ class TusaLanger2015RepiBA08SE(GMPE):
                  self._get_site_amplification(sites, C))
 
         istddevs = self._get_stddevs(C,
-        						     stddev_types,
-        						     num_sites=sites.vs30.size)
+                                     stddev_types,
+                                     num_sites=sites.vs30.size)
 
         # convert from log10 to ln and from cm/s**2 to g
         mean = np.log((10.0 ** (imean - 2.0)) / g)
