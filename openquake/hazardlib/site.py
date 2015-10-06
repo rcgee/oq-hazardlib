@@ -128,7 +128,7 @@ class SiteCollection(object):
         A list of instances of :class:`Site` class.
     """
     @classmethod
-    def from_points(cls, lons, lats, depths, site_ids, sitemodel):  
+    def from_points(cls, lons, lats, depths, site_ids, sitemodel):
         """
         Build the site collection from
 

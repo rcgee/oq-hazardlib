@@ -50,7 +50,7 @@ class Mesh(object):
     #: approximation is required -- set to 5 meters.
     DIST_TOLERANCE = 0.005
 
-    def __init__(self, lons, lats, depths=None): 
+    def __init__(self, lons, lats, depths=None):
         assert (isinstance(lons, numpy.ndarray)
                 and isinstance(lats, numpy.ndarray)
                 and (depths is None or isinstance(depths, numpy.ndarray))
