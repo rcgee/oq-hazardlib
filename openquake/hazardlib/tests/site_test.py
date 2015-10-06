@@ -103,7 +103,7 @@ class SiteCollectionCreationTestCase(unittest.TestCase):
     def test_from_points(self):
         lons = [10, -1.2]
         lats = [20, -3.4]
-	depths = [1.0, 2.0] 
+        depths = [1.0, 2.0]
         cll = SiteCollection.from_points(lons, lats, depths, [1, 2], SiteModelParam())
         assert_eq(cll.vs30, [1.2, 1.2])
         assert_eq(cll.vs30measured, [True, True])
@@ -223,10 +223,10 @@ class SiteCollectionFilterTestCase(unittest.TestCase):
 class SiteCollectionIterTestCase(unittest.TestCase):
 
     def test(self):
-        s1 = Site(location=Point(10, 20), 
+        s1 = Site(location=Point(10, 20),
                   vs30=1.2, vs30measured=True,
                   z1pt0=3.4, z2pt5=5.6)
-        s2 = Site(location=Point(-1.2, -3.4), 
+        s2 = Site(location=Point(-1.2, -3.4),
                   vs30=55.4, vs30measured=False,
                   z1pt0=66.7, z2pt5=88.9)
         cll = SiteCollection([s1, s2])
