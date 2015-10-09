@@ -195,7 +195,7 @@ class SiteCollection(object):
         # subsequent calculation. note that this doesn't protect arrays from
         # being changed by calling itemset()
         for arr in (self._vs30, self._vs30measured, self._z1pt0, self._z2pt5,
-                    self.lons, self.lats, self._backarc, self.sids):
+                    self.lons, self.lats, self.depths, self._backarc, self.sids):
             arr.flags.writeable = False
 
     @property
@@ -323,8 +323,8 @@ class FilteredSiteCollection(object):
 
     @property
     def mesh(self):
-        """Return a mesh with the given lons and lats"""
-        return Mesh(self.lons, self.lats, depths=None)
+        """Return a mesh with the given lons, lats, and depths"""
+        return Mesh(self.lons, self.lats, self.depths)
 
     def filter(self, mask):
         """
@@ -439,7 +439,7 @@ def _extract_site_param(fsc, name):
 
 
 # attach a number of properties filtering the arrays
-for name in 'vs30 vs30measured z1pt0 z2pt5 backarc lons lats sids'.split():
+for name in 'vs30 vs30measured z1pt0 z2pt5 backarc lons lats depths sids'.split():
     prop = property(
         lambda fsc, name=name: _extract_site_param(fsc, name),
         doc='Extract %s array from FilteredSiteCollection' % name)
