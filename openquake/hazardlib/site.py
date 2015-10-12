@@ -156,7 +156,7 @@ class SiteCollection(object):
         self.sids = numpy.array(site_ids, int)
         self.lons = numpy.array(lons)
         self.lats = numpy.array(lats)
-        self.depths = numpy.array(depths) 
+        self.depths = numpy.array(depths)
         self._vs30 = sitemodel.reference_vs30_value
         self._vs30measured = sitemodel.reference_vs30_type == 'measured'
         self._z1pt0 = sitemodel.reference_depth_to_1pt0km_per_sec
@@ -170,7 +170,7 @@ class SiteCollection(object):
         self.sids = numpy.zeros(n, dtype=int)
         self.lons = numpy.zeros(n, dtype=float)
         self.lats = numpy.zeros(n, dtype=float)
-        self.depths=numpy.zeros(n, dtype=float) 
+        self.depths = numpy.zeros(n, dtype=float)
         self._vs30 = numpy.zeros(n, dtype=float)
         self._vs30measured = numpy.zeros(n, dtype=bool)
         self._z1pt0 = numpy.zeros(n, dtype=float)
@@ -181,7 +181,7 @@ class SiteCollection(object):
             self.sids[i] = sites[i].id
             self.lons[i] = sites[i].location.longitude
             self.lats[i] = sites[i].location.latitude
-            self.depths[i] = sites[i].location.depth  
+            self.depths[i] = sites[i].location.depth
             self._vs30[i] = sites[i].vs30
             self._vs30measured[i] = sites[i].vs30measured
             self._z1pt0[i] = sites[i].z1pt0
@@ -200,7 +200,7 @@ class SiteCollection(object):
 
     @property
     def mesh(self):
-        """Return a mesh with the given lons, lats, an depths"""
+        """Return a mesh with the given lons, lats, and depths"""
         return Mesh(self.lons, self.lats, self.depths)
 
     @property
