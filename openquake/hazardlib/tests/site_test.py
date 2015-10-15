@@ -76,7 +76,7 @@ class SiteTestCase(unittest.TestCase):
 
 class SiteCollectionCreationTestCase(unittest.TestCase):
     def test_from_sites(self):
-        s1 = Site(location=Point(10, 20, 30), 
+        s1 = Site(location=Point(10, 20, 30),
                   vs30=1.2, vs30measured=True,
                   z1pt0=3.4, z2pt5=5.6, backarc=True)
         s2 = Site(location=Point(-1.2, -3.4, -5.6),

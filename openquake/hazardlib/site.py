@@ -149,7 +149,7 @@ class SiteCollection(object):
             reference_backarc
         """
         assert len(lons) == len(lats) == len(depths) == len(site_ids), (
-            len(lons), len(lats), len(site_ids))
+            len(lons), len(lats), len(depths), len(site_ids))
         self = cls.__new__(cls)
         self.complete = self
         self.total_sites = len(lons)
