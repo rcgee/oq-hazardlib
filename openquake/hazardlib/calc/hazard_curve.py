@@ -29,7 +29,7 @@ import numpy
 from openquake.baselib.performance import DummyMonitor
 from openquake.hazardlib.calc import filters
 from openquake.hazardlib.imt import from_string
-from openquake.hazardlib.gsim.base import deprecated
+from openquake.baselib.general import deprecated
 
 
 def zero_curves(num_sites, imtls):
@@ -217,7 +217,4 @@ def hazard_curves_per_trt(
     for i in range(len(gnames)):
         for imt in imtls:
             curves[i][imt] = 1. - curves[i][imt]
-    ctx_mon.flush()
-    rup_mon.flush()
-    pne_mon.flush()
     return curves
