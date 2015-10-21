@@ -115,53 +115,51 @@ class SiteCollection(object):
     Instances of this class are intended to represent a large collection
     of sites in a most efficient way in terms of memory usage.
 
-    .. note::
-
-        Because calculations assume that :class:`Sites <Site>` are on the
-        Earth's surface, all `depth` information in a :class:`SiteCollection`
-        is discarded. The collection `mesh` will only contain lon and lat. So
-        even if a :class:`SiteCollection` is created from sites containing
-        `depth` in their geometry, iterating over the collection will yield
-        :class:`Sites <Site>` with a reference depth of 0.0.
-
     :param sites:
         A list of instances of :class:`Site` class.
     """
     @classmethod
-    def from_points(cls, lons, lats, depths, site_ids, sitemodel):
+    def from_points(cls, lons, lats, site_ids, sitemodel, depths=None):
         """
         Build the site collection from
 
         :param lons:
-            a sequence of longitudes
+            A sequence of longitudes
         :param lats:
-            a sequence of latitudes
-        :param depths:
-            a sequence of depths
+            A sequence of latitudes
         :param site_ids:
-            a sequence of distinct integers
+            A sequence of distinct integers
         :param sitemodel:
-            an object containing the attributes
+            An object containing the attributes
             reference_vs30_value,
             reference_vs30_type,
             reference_depth_to_1pt0km_per_sec,
             reference_depth_to_2pt5km_per_sec,
             reference_backarc
+        :param depths:
+            A sequence of depths (or None). If not given, The collection `mesh`
+            will only contain lon and lat, yielding :class:`Sites <Site>`
+            with a reference depth of 0.0 (the Earth's surface)
         """
-        assert len(lons) == len(lats) == len(depths) == len(site_ids), (
-            len(lons), len(lats), len(depths), len(site_ids))
+        if depths:
+            assert len(lons) == len(lats) == len(depths) == len(site_ids), (
+                len(lons), len(lats), len(depths), len(site_ids))
+        else:
+            assert len(lons) == len(lats) == len(site_ids), (
+                len(lons), len(lats), len(site_ids))
         self = cls.__new__(cls)
         self.complete = self
         self.total_sites = len(lons)
         self.sids = numpy.array(site_ids, int)
         self.lons = numpy.array(lons)
         self.lats = numpy.array(lats)
-        self.depths = numpy.array(depths)
         self._vs30 = sitemodel.reference_vs30_value
         self._vs30measured = sitemodel.reference_vs30_type == 'measured'
         self._z1pt0 = sitemodel.reference_depth_to_1pt0km_per_sec
         self._z2pt5 = sitemodel.reference_depth_to_2pt5km_per_sec
         self._backarc = sitemodel.reference_backarc
+        if depths:
+            self.depths = numpy.array(depths)
         return self
 
     def __init__(self, sites):
@@ -176,6 +174,7 @@ class SiteCollection(object):
         self._z1pt0 = numpy.zeros(n, dtype=float)
         self._z2pt5 = numpy.zeros(n, dtype=float)
         self._backarc = numpy.zeros(n, dtype=bool)
+        self.depths = numpy.zeros(n, dtype=float)
 
         for i in range(n):
             self.sids[i] = sites[i].id
@@ -187,6 +186,7 @@ class SiteCollection(object):
             self._z1pt0[i] = sites[i].z1pt0
             self._z2pt5[i] = sites[i].z2pt5
             self._backarc[i] = sites[i].backarc
+            self.depths[i] = sites[i].location.depth
 
         # protect arrays from being accidentally changed. it is useful
         # because we pass these arrays directly to a GMPE through
@@ -439,7 +439,8 @@ def _extract_site_param(fsc, name):
 
 
 # attach a number of properties filtering the arrays
-for name in 'vs30 vs30measured z1pt0 z2pt5 backarc lons lats depths sids'.split():
+for name in 'vs30 vs30measured z1pt0 z2pt5 backarc lons lats\
+            depths sids'.split():
     prop = property(
         lambda fsc, name=name: _extract_site_param(fsc, name),
         doc='Extract %s array from FilteredSiteCollection' % name)
