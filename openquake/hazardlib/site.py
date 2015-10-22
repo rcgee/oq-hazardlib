@@ -115,11 +115,18 @@ class SiteCollection(object):
     Instances of this class are intended to represent a large collection
     of sites in a most efficient way in terms of memory usage.
 
+    .. note::
+
+        If depths are not given, iterating over the collection `mesh`
+        will yield :class:`Sites <Site>` with a reference depth of 0.0
+        assuming that sites lie on the Earth's surface.
+
     :param sites:
         A list of instances of :class:`Site` class.
     """
+
     @classmethod
-    def from_points(cls, lons, lats, site_ids, sitemodel, depths=None):
+    def from_points(cls, lons, lats, depths, site_ids, sitemodel):
         """
         Build the site collection from
 
@@ -127,6 +134,8 @@ class SiteCollection(object):
             A sequence of longitudes
         :param lats:
             A sequence of latitudes
+        :param depths:
+            A sequence of depths 
         :param site_ids:
             A sequence of distinct integers
         :param sitemodel:
@@ -136,17 +145,10 @@ class SiteCollection(object):
             reference_depth_to_1pt0km_per_sec,
             reference_depth_to_2pt5km_per_sec,
             reference_backarc
-        :param depths:
-            A sequence of depths (or None). If not given, The collection `mesh`
-            will only contain lon and lat, yielding :class:`Sites <Site>`
-            with a reference depth of 0.0 (the Earth's surface)
         """
-        if depths:
-            assert len(lons) == len(lats) == len(depths) == len(site_ids), (
-                len(lons), len(lats), len(depths), len(site_ids))
-        else:
-            assert len(lons) == len(lats) == len(site_ids), (
-                len(lons), len(lats), len(site_ids))
+
+        assert len(lons) == len(lats) == len(depths) == len(site_ids), (
+            len(lons), len(lats), len(depths), len(site_ids))
         self = cls.__new__(cls)
         self.complete = self
         self.total_sites = len(lons)
@@ -158,8 +160,7 @@ class SiteCollection(object):
         self._z1pt0 = sitemodel.reference_depth_to_1pt0km_per_sec
         self._z2pt5 = sitemodel.reference_depth_to_2pt5km_per_sec
         self._backarc = sitemodel.reference_backarc
-        if depths:
-            self.depths = numpy.array(depths)
+        self.depths = numpy.array(depths)
         return self
 
     def __init__(self, sites):

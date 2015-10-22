@@ -37,7 +37,7 @@ class SiteModelParam(object):
 class SiteTestCase(unittest.TestCase):
     def _assert_creation(self, error=None, **kwargs):
         default_kwargs = {
-            'location': Point(10, 20, 30),
+            'location': Point(10, 20),
             'vs30': 10,
             'vs30measured': False,
             'z1pt0': 20,
@@ -76,10 +76,10 @@ class SiteTestCase(unittest.TestCase):
 
 class SiteCollectionCreationTestCase(unittest.TestCase):
     def test_from_sites(self):
-        s1 = Site(location=Point(10, 20, 30),
+        s1 = Site(location=Point(10, 20),
                   vs30=1.2, vs30measured=True,
                   z1pt0=3.4, z2pt5=5.6, backarc=True)
-        s2 = Site(location=Point(-1.2, -3.4, -5.6),
+        s2 = Site(location=Point(-1.2, -3.4),
                   vs30=55.4, vs30measured=False,
                   z1pt0=66.7, z2pt5=88.9, backarc=False)
         cll = SiteCollection([s1, s2])
@@ -89,7 +89,7 @@ class SiteCollectionCreationTestCase(unittest.TestCase):
         self.assertTrue((cll.z2pt5 == [5.6, 88.9]).all())
         self.assertTrue((cll.mesh.lons == [10, -1.2]).all())
         self.assertTrue((cll.mesh.lats == [20, -3.4]).all())
-        self.assertTrue((cll.mesh.depths == [30, -5.6]).all())
+        self.assertTrue((cll.mesh.depths == [0, 0]).all())
         self.assertTrue((cll.backarc == [True, False]).all())
         for arr in (cll.vs30, cll.z1pt0, cll.z2pt5):
             self.assertIsInstance(arr, numpy.ndarray)
@@ -104,15 +104,16 @@ class SiteCollectionCreationTestCase(unittest.TestCase):
     def test_from_points(self):
         lons = [10, -1.2]
         lats = [20, -3.4]
-        depths = [1.0, 2.0]
-        cll = SiteCollection.from_points(lons, lats, depths, [1, 2], SiteModelParam())
+        depths = [0, 0]
+        cll = SiteCollection.from_points(lons, lats, depths,
+                                         [1, 2], SiteModelParam())
         assert_eq(cll.vs30, [1.2, 1.2])
         assert_eq(cll.vs30measured, [True, True])
         assert_eq(cll.z1pt0, [3.4, 3.4])
         assert_eq(cll.z2pt5, [5.6, 5.6])
         assert_eq(cll.mesh.lons, [10, -1.2])
         assert_eq(cll.mesh.lats, [20, -3.4])
-        assert_eq(cll.mesh.depths, [1.0, 2.0])
+        assert_eq(cll.mesh.depths, [0, 0])
         assert_eq(cll.backarc, [False, False])
 
         for arr in (cll.vs30, cll.z1pt0, cll.z2pt5):
@@ -127,13 +128,13 @@ class SiteCollectionCreationTestCase(unittest.TestCase):
 
 class SiteCollectionFilterTestCase(unittest.TestCase):
     SITES = [
-        Site(location=Point(10, 20, 30), vs30=1.2, vs30measured=True,
+        Site(location=Point(10, 20), vs30=1.2, vs30measured=True,
              z1pt0=3, z2pt5=5, id=0),
-        Site(location=Point(11, 12, 13), vs30=55.4, vs30measured=False,
+        Site(location=Point(11, 12), vs30=55.4, vs30measured=False,
              z1pt0=6, z2pt5=8, id=1),
-        Site(location=Point(0, 2, 0), vs30=2, vs30measured=True,
+        Site(location=Point(0, 2), vs30=2, vs30measured=True,
              z1pt0=9, z2pt5=17, id=2),
-        Site(location=Point(1, 1, 3), vs30=4, vs30measured=False,
+        Site(location=Point(1, 1), vs30=4, vs30measured=False,
              z1pt0=22, z2pt5=11, id=3)
     ]
 
@@ -148,7 +149,7 @@ class SiteCollectionFilterTestCase(unittest.TestCase):
         arreq(filtered.z2pt5, [5, 17])
         arreq(filtered.mesh.lons, [10, 0])
         arreq(filtered.mesh.lats, [20, 2])
-        arreq(filtered.mesh.depths, [30, 0])
+        arreq(filtered.mesh.depths, [0, 0])
         arreq(filtered.sids, [0, 2])
         arreq([site.id for site in filtered], [0, 2])
 
@@ -160,7 +161,7 @@ class SiteCollectionFilterTestCase(unittest.TestCase):
         arreq(filtered.z2pt5, [8, 17, 11])
         arreq(filtered.mesh.lons, [11, 0, 1])
         arreq(filtered.mesh.lats, [12, 2, 1])
-        arreq(filtered.mesh.depths, [13, 0, 3])
+        arreq(filtered.mesh.depths, [0, 0, 0])
 
     def test_filter_all_out(self):
         col = SiteCollection(self.SITES)
@@ -235,6 +236,32 @@ class SiteCollectionIterTestCase(unittest.TestCase):
         cll_sites = list(cll)
         for i, s in enumerate([s1, s2]):
             self.assertEqual(s, cll_sites[i])
+
+    def test_depths_go_to_zero(self):
+        # Depth information is zero when a :class:`Sites <Site>`
+        # contains only lon/lat
+        s1 = Site(location=Point(10, 20),
+                  vs30=1.2, vs30measured=True,
+                  z1pt0=3.4, z2pt5=5.6)
+        s2 = Site(location=Point(-1.2, -3.4),
+                  vs30=55.4, vs30measured=False,
+                  z1pt0=66.7, z2pt5=88.9)
+        cll = SiteCollection([s1, s2])
+
+        cll_sites = list(cll)
+        exp_s1 = Site(location=Point(10, 20, 0.0),
+                      vs30=1.2, vs30measured=True,
+                      z1pt0=3.4, z2pt5=5.6)
+        exp_s2 = Site(location=Point(-1.2, -3.4, 0.0),
+                      vs30=55.4, vs30measured=False,
+                      z1pt0=66.7, z2pt5=88.9)
+
+        for i, s in enumerate([exp_s1, exp_s2]):
+            self.assertEqual(s, cll_sites[i])
+
+        # test equality of site collections
+        sc = SiteCollection([exp_s1, exp_s2])
+        self.assertEqual(cll, sc)
 
 
 class SitePickleTestCase(unittest.TestCase):
