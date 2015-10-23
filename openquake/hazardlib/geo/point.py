@@ -47,10 +47,6 @@ class Point(object):
     EQUALITY_DISTANCE = 1e-3
 
     def __init__(self, longitude, latitude, depth=0.0):
-        if not depth < geo_utils.EARTH_RADIUS:
-            raise ValueError("The depth must be less than "
-                             "the earth radius (6371.0 km)")
-
         if not -180.0 <= longitude <= 180.0:
             raise ValueError("longitude %.6f outside range" % longitude)
 
