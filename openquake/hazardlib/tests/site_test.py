@@ -105,8 +105,8 @@ class SiteCollectionCreationTestCase(unittest.TestCase):
         lons = [10, -1.2]
         lats = [20, -3.4]
         depths = [0, 0]
-        cll = SiteCollection.from_points(lons, lats, depths,
-                                         [1, 2], SiteModelParam())
+        cll = SiteCollection.from_points(
+            lons, lats, depths, [1, 2], SiteModelParam())
         assert_eq(cll.vs30, [1.2, 1.2])
         assert_eq(cll.vs30measured, [True, True])
         assert_eq(cll.z1pt0, [3.4, 3.4])
