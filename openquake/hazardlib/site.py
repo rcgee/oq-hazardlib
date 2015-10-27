@@ -175,7 +175,6 @@ class SiteCollection(object):
         self._z1pt0 = numpy.zeros(n, dtype=float)
         self._z2pt5 = numpy.zeros(n, dtype=float)
         self._backarc = numpy.zeros(n, dtype=bool)
-        self.depths = numpy.zeros(n, dtype=float)
 
         for i in range(n):
             self.sids[i] = sites[i].id
@@ -187,7 +186,6 @@ class SiteCollection(object):
             self._z1pt0[i] = sites[i].z1pt0
             self._z2pt5[i] = sites[i].z2pt5
             self._backarc[i] = sites[i].backarc
-            self.depths[i] = sites[i].location.depth
 
         # protect arrays from being accidentally changed. it is useful
         # because we pass these arrays directly to a GMPE through
