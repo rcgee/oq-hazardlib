@@ -37,7 +37,7 @@ class SiteModelParam(object):
 class SiteTestCase(unittest.TestCase):
     def _assert_creation(self, error=None, **kwargs):
         default_kwargs = {
-            'location': Point(10, 20, 30),
+            'location': Point(10, 20, -30),
             'vs30': 10,
             'vs30measured': False,
             'z1pt0': 20,
