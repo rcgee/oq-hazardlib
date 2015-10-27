@@ -129,12 +129,6 @@ class PointCreationTestCase(unittest.TestCase):
         geo.Point(0.0, 90.0, 0.0)
         geo.Point(0.0, -90.0, 0.0)
 
-    def test_depth_inside_range(self):
-        self.assertRaises(ValueError, geo.Point, 0.0, 0.0, EARTH_RADIUS)
-        self.assertRaises(ValueError, geo.Point, 0.0, 0.0, EARTH_RADIUS + 0.1)
-
-        geo.Point(0.0, 90.0, EARTH_RADIUS - 0.1)
-
 
 class PointFromVectorTestCase(unittest.TestCase):
     def test_from_vector(self):
