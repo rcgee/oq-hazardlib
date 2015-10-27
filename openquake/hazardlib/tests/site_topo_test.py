@@ -104,7 +104,7 @@ class SiteCollectionCreationTestCase(unittest.TestCase):
     def test_from_points(self):
         lons = [10, -1.2]
         lats = [20, -3.4]
-        depths = [1.0, 2.0]
+        depths = [-1.0, -2.0]
         cll = SiteCollection.from_points(
             lons, lats, depths, [1, 2], SiteModelParam())
         assert_eq(cll.vs30, [1.2, 1.2])
@@ -113,7 +113,7 @@ class SiteCollectionCreationTestCase(unittest.TestCase):
         assert_eq(cll.z2pt5, [5.6, 5.6])
         assert_eq(cll.mesh.lons, [10, -1.2])
         assert_eq(cll.mesh.lats, [20, -3.4])
-        assert_eq(cll.mesh.depths, [1.0, 2.0])
+        assert_eq(cll.mesh.depths, [-1.0, -2.0])
         assert_eq(cll.backarc, [False, False])
 
         for arr in (cll.vs30, cll.z1pt0, cll.z2pt5):
@@ -128,13 +128,13 @@ class SiteCollectionCreationTestCase(unittest.TestCase):
 
 class SiteCollectionFilterTestCase(unittest.TestCase):
     SITES = [
-        Site(location=Point(10, 20, 30), vs30=1.2, vs30measured=True,
+        Site(location=Point(10, 20, -30), vs30=1.2, vs30measured=True,
              z1pt0=3, z2pt5=5, id=0),
-        Site(location=Point(11, 12, 13), vs30=55.4, vs30measured=False,
+        Site(location=Point(11, 12, -13), vs30=55.4, vs30measured=False,
              z1pt0=6, z2pt5=8, id=1),
         Site(location=Point(0, 2, 0), vs30=2, vs30measured=True,
              z1pt0=9, z2pt5=17, id=2),
-        Site(location=Point(1, 1, 3), vs30=4, vs30measured=False,
+        Site(location=Point(1, 1, -3), vs30=4, vs30measured=False,
              z1pt0=22, z2pt5=11, id=3)
     ]
 
@@ -149,7 +149,7 @@ class SiteCollectionFilterTestCase(unittest.TestCase):
         arreq(filtered.z2pt5, [5, 17])
         arreq(filtered.mesh.lons, [10, 0])
         arreq(filtered.mesh.lats, [20, 2])
-        arreq(filtered.mesh.depths, [30, 0])
+        arreq(filtered.mesh.depths, [-30, 0])
         arreq(filtered.sids, [0, 2])
         arreq([site.id for site in filtered], [0, 2])
 
@@ -161,7 +161,7 @@ class SiteCollectionFilterTestCase(unittest.TestCase):
         arreq(filtered.z2pt5, [8, 17, 11])
         arreq(filtered.mesh.lons, [11, 0, 1])
         arreq(filtered.mesh.lats, [12, 2, 1])
-        arreq(filtered.mesh.depths, [13, 0, 3])
+        arreq(filtered.mesh.depths, [-13, 0, -3])
 
     def test_filter_all_out(self):
         col = SiteCollection(self.SITES)
@@ -242,7 +242,7 @@ class SitePickleTestCase(unittest.TestCase):
     # Tests for pickling Sites.
 
     def test_dumps_and_loads(self):
-        point = Point(1, 2, 3)
+        point = Point(1, 2, -3)
         site1 = Site(point, 760.0, True, 100.0, 5.0)
         site2 = pickle.loads(pickle.dumps(site1))
 
