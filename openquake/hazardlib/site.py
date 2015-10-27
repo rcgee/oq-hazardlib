@@ -155,12 +155,12 @@ class SiteCollection(object):
         self.sids = numpy.array(site_ids, int)
         self.lons = numpy.array(lons)
         self.lats = numpy.array(lats)
+        self.depths = numpy.array(depths)
         self._vs30 = sitemodel.reference_vs30_value
         self._vs30measured = sitemodel.reference_vs30_type == 'measured'
         self._z1pt0 = sitemodel.reference_depth_to_1pt0km_per_sec
         self._z2pt5 = sitemodel.reference_depth_to_2pt5km_per_sec
         self._backarc = sitemodel.reference_backarc
-        self.depths = numpy.array(depths)
         return self
 
     def __init__(self, sites):
