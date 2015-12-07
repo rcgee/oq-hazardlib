@@ -22,13 +22,16 @@ import inspect
 import importlib
 from collections import OrderedDict
 from openquake.hazardlib.scalerel.base import BaseMSR, BaseASR, BaseMSRSigma, \
-BaseASRSigma
+    BaseASRSigma
 
 
 from openquake.hazardlib.scalerel.ceus2011 import CEUS2011
 from openquake.hazardlib.scalerel.peer import PeerMSR
 from openquake.hazardlib.scalerel.point import PointMSR
 from openquake.hazardlib.scalerel.wc1994 import WC1994
+from openquake.hazardlib.scalerel.strasser2010 import StrasserInterface, \
+    StrasserIntraslab
+from openquake.hazardlib.scalerel.etna import EtnaMSR
 
 
 def _get_available_class(base_class):
@@ -57,6 +60,7 @@ def get_available_magnitude_scalerel():
     classes, keyed by class name.
     '''
     return _get_available_class(BaseMSR)
+
 
 def get_available_sigma_magnitude_scalerel():
     '''
