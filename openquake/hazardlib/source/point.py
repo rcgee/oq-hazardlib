@@ -58,10 +58,12 @@ class PointSource(ParametricSeismicSource):
         depth,  if one or more of hypocenter depth values is shallower
         than upper seismogenic depth or deeper than lower seismogenic depth.
     """
-    __slots__ = ParametricSeismicSource.__slots__ + '''upper_seismogenic_depth
+    _slots_ = ParametricSeismicSource._slots_ + '''upper_seismogenic_depth
     lower_seismogenic_depth location nodal_plane_distribution
     hypocenter_distribution
     '''.split()
+
+    MODIFICATIONS = set(())
 
     def __init__(self, source_id, name, tectonic_region_type,
                  mfd, rupture_mesh_spacing,

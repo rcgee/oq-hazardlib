@@ -25,6 +25,7 @@ import os
 import sys
 import imp
 import math
+import operator
 import warnings
 import tempfile
 import importlib
@@ -215,6 +216,8 @@ def split_in_blocks(sequence, hint, weight=lambda item: 1,
      [<WeightedSequence ['A', 'B'], weight=2>, <WeightedSequence ['C', 'D'], weight=2>, <WeightedSequence ['E'], weight=1>]
 
     """
+    if hint == 0:  # do not split
+        return sequence
     items = list(sequence)
     assert hint > 0, hint
     assert len(items) > 0, len(items)
@@ -299,9 +302,9 @@ def assert_close(a, b, rtol=1e-07, atol=0, context=None):
         return
     if a == b:  # another shortcut
         return
-    if hasattr(a, '__slots__'):  # record-like objects
-        assert_close_seq(a.__slots__, b.__slots__, rtol, atol, a)
-        for x, y in zip(a.__slots__, b.__slots__):
+    if hasattr(a, '_slots_'):  # record-like objects
+        assert_close_seq(a._slots_, b._slots_, rtol, atol, a)
+        for x, y in zip(a._slots_, b._slots_):
             assert_close(getattr(a, x), getattr(b, y), rtol, atol, x)
         return
     if isinstance(a, collections.Mapping):  # dict-like objects
@@ -499,7 +502,7 @@ class CallableDict(collections.OrderedDict):
 
     def __missing__(self, key):
         if callable(self.keymissing):
-            return self.keymissing(key)
+            return self.keymissing
         raise KeyError(key)
 
 
@@ -621,6 +624,32 @@ def groupby(objects, key, reducegroup=list):
     kgroups = itertools.groupby(sorted(objects, key=key), key)
     return collections.OrderedDict((k, reducegroup(group))
                                    for k, group in kgroups)
+
+
+def groupby2(records, kfield, vfield):
+    """
+    :param records: a sequence of records with positional or named fields
+    :param kfield: the index/name/tuple specifying the field to use as a key
+    :param vfield: the index/name/tuple specifying the field to use as a value
+    :returns: an OrderedDict of lists of the form {key: [value, ...]}.
+
+    >>> groupby2(['A1', 'A2', 'B1', 'B2', 'B3'], 0, 1)
+    OrderedDict([('A', ['1', '2']), ('B', ['1', '2', '3'])])
+
+    Here is an example where the keyfield is a tuple of integers:
+
+    >>> groupby2(['A11', 'A12', 'B11', 'B21'], (0, 1), 2)
+    OrderedDict([(('A', '1'), ['1', '2']), (('B', '1'), ['1']), (('B', '2'), ['1'])])
+    """
+    if isinstance(kfield, tuple):
+        kgetter = operator.itemgetter(*kfield)
+    else:
+        kgetter = operator.itemgetter(kfield)
+    if isinstance(vfield, tuple):
+        vgetter = operator.itemgetter(*vfield)
+    else:
+        vgetter = operator.itemgetter(vfield)
+    return groupby(records, kgetter, lambda rows: [vgetter(r) for r in rows])
 
 
 def humansize(nbytes, suffixes=('B', 'KB', 'MB', 'GB', 'TB', 'PB')):

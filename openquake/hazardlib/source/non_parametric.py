@@ -44,7 +44,9 @@ class NonParametricSeismicSource(BaseSeismicSource):
         rupture to occur N times (the PMF must be defined from a minimum number
         of occurrences equal to 0)
     """
-    __slots__ = BaseSeismicSource.__slots__ + ['data']
+    _slots_ = BaseSeismicSource._slots_ + ['data']
+
+    MODIFICATIONS = set(())
 
     def __init__(self, source_id, name, tectonic_region_type, data):
         super(NonParametricSeismicSource, self). \
