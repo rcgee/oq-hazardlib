@@ -39,16 +39,15 @@ class EtnaMSR(BaseASR, BaseMSR):
     Geofisica della Terra Solida, Atti del 33 Convegno Nazionale, Tema 1:
     Geodinamica, 20-25.
     """
-    def get_median_mag(self, length, rake):
+    def get_median_mag(self, area, rake):
         """
         This ASR returns magnitude (Ml) given an area (km^2), assumes
         aspect ratio = 1.5; rake and standard deviation are ignored.
 
-        :param length:
-            length in km.
+        :param area:
+            Area in square km.
         """
-        area = length * 1.5
-        return 3.391 + 2.076 * log10((area)**0.5)
+        return 3.391 + 2.076 * log10((1.5*area)**0.5)
 
     def get_median_area(self, mag, rake):
         """
@@ -58,5 +57,4 @@ class EtnaMSR(BaseASR, BaseMSR):
         :param magnitude:
             Magnitude (Ml)
         """
-        length = ((10 ** (-1.633 + 0.482 * mag))**2)
-        return (2./3)*length
+        return (2./3)*((10 ** (-1.633 + 0.482 * mag))**2)
