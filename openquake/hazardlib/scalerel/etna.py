@@ -28,7 +28,6 @@ class EtnaMSR(BaseASR, BaseMSR):
     derived for Mt Etna. Original relationship determines magnitude (Ml)
     from rupture length (km):
     Ml = (3.391 +/- 0.192) + (2.076 +/- 0.414) * log10(length)
-    (D'Amico, S., Pace, B., pers. comm. Dec 2, 2015)
 
     NOTE: Rupture length is converted to area assuming an aspect ratio
     of 1.5 (lengh:width). In order to preserve the original rupture length,
@@ -40,15 +39,16 @@ class EtnaMSR(BaseASR, BaseMSR):
     Geofisica della Terra Solida, Atti del 33 Convegno Nazionale, Tema 1:
     Geodinamica, 20-25.
     """
-    def get_median_mag(self, area, rake):
+    def get_median_mag(self, length, rake):
         """
         This ASR returns magnitude (Ml) given an area (km^2), assumes
         aspect ratio = 1.5; rake and standard deviation are ignored.
 
-        :param area:
-            Area in square km.
+        :param length:
+            length in km.
         """
-        return 3.391 + 2.076 * log10((1.5*area)**0.5)
+        area = length * 1.5
+        return 3.391 + 2.076 * log10((area)**0.5)
 
     def get_median_area(self, mag, rake):
         """
@@ -58,4 +58,5 @@ class EtnaMSR(BaseASR, BaseMSR):
         :param magnitude:
             Magnitude (Ml)
         """
-        return (2./3)*((10 ** (-1.633 + 0.482 * mag))**2)
+        length = ((10 ** (-1.633 + 0.482 * mag))**2)
+        return (2./3)*length
