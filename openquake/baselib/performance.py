@@ -84,9 +84,14 @@ class PerformanceMonitor(object):
         self.measuremem = measuremem
         self.mem = 0
         self.duration = 0
-        self._start_time = time.time()
+        self._start_time = self._stop_time = time.time()
         self.children = []
         self.counts = 0
+
+    @property
+    def dt(self):
+        """Last time interval measured"""
+        return self._stop_time - self._start_time
 
     def measure_mem(self):
         """A memory measurement (in bytes)"""
@@ -130,7 +135,8 @@ class PerformanceMonitor(object):
         if self.measuremem:
             self.stop_mem = self.measure_mem()
             self.mem += self.stop_mem - self.start_mem
-        self.duration += time.time() - self._start_time
+        self._stop_time = time.time()
+        self.duration += self._stop_time - self._start_time
         self.counts += 1
         self.on_exit()
 
@@ -147,7 +153,7 @@ class PerformanceMonitor(object):
             child.flush()
         data = self.get_data()
         if len(data) == 0:  # no information
-            return
+            return []
 
         # reset monitor
         self.duration = 0
@@ -165,8 +171,10 @@ class PerformanceMonitor(object):
         else:  # print on stddout
             print(data[0])
 
+        return data
+
     # TODO: rename this as spawn; see what will break
-    def __call__(self, operation, **kw):
+    def __call__(self, operation='no operation', **kw):
         """
         Return a child of the monitor usable for a different operation.
         """
@@ -174,7 +182,7 @@ class PerformanceMonitor(object):
         self.children.append(child)
         return child
 
-    def new(self, operation, **kw):
+    def new(self, operation='no operation', **kw):
         """
         Return a copy of the monitor usable for a different operation.
         """
@@ -206,12 +214,14 @@ class DummyMonitor(PerformanceMonitor):
         self.hdf5path = None
         self.children = []
         self.counts = 0
+        self._start_time = self._stop_time = time.time()
 
     def __enter__(self):
+        self._start_time = time.time()
         return self
 
     def __exit__(self, etype, exc, tb):
-        pass
+        self._stop_time = time.time()
 
     def flush(self):
         pass

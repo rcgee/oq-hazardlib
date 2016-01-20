@@ -125,6 +125,16 @@ class SiteCollectionCreationTestCase(unittest.TestCase):
             self.assertEqual(arr.dtype, bool)
         self.assertEqual(len(cll), 2)
 
+        # test split_in_tiles
+        tiles = cll.split_in_tiles(0)
+        self.assertEqual(len(tiles), 1)
+
+        tiles = cll.split_in_tiles(1)
+        self.assertEqual(len(tiles), 1)
+
+        tiles = cll.split_in_tiles(2)
+        self.assertEqual(len(tiles), 2)
+
 
 class SiteCollectionFilterTestCase(unittest.TestCase):
     SITES = [
@@ -262,6 +272,11 @@ class SiteCollectionIterTestCase(unittest.TestCase):
         # test equality of site collections
         sc = SiteCollection([exp_s1, exp_s2])
         self.assertEqual(cll, sc)
+
+        # test nonequality of site collections
+        # (see https://github.com/gem/oq-hazardlib/pull/403)
+        sc._vs30 = numpy.array([numpy.nan, numpy.nan])
+        self.assertNotEqual(cll, sc)
 
 
 class SitePickleTestCase(unittest.TestCase):

@@ -45,16 +45,19 @@ def zero_curves(num_sites, imtls):
     return zero
 
 
-def zero_maps(num_sites, imts):
+def zero_maps(num_sites, imts, poes=()):
     """
     :param num_sites: the number of sites
     :param imts: the intensity measure types
     :returns: an array of zero curves with length num_sites
     """
     # numpy dtype for the hazard maps
-    imt_dt = numpy.dtype([(imt, float) for imt in imts])
-    zero = numpy.zeros(num_sites, imt_dt)
-    return zero
+    if poes:
+        imt_dt = numpy.dtype([('%s~%s' % (imt, poe), numpy.float32)
+                              for imt in imts for poe in poes])
+    else:
+        imt_dt = numpy.dtype([(imt, numpy.float32) for imt in imts])
+    return numpy.zeros(num_sites, imt_dt)
 
 
 def agg_curves(acc, curves):
@@ -186,15 +189,13 @@ def hazard_curves_per_trt(
     curves = [numpy.ones(len(sites), imt_dt) for gname in gnames]
     sources_sites = ((source, sites) for source in sources)
     ctx_mon = monitor('making contexts', measuremem=False)
-    rup_mon = monitor('getting ruptures', measuremem=False)
     pne_mon = monitor('computing poes', measuremem=False)
     monitor.calc_times = []  # pairs (src_id, delta_t)
     for source, s_sites in source_site_filter(sources_sites):
         t0 = time.time()
         try:
-            with rup_mon:
-                rupture_sites = list(rupture_site_filter(
-                    (rupture, s_sites) for rupture in source.iter_ruptures()))
+            rupture_sites = rupture_site_filter(
+                (rupture, s_sites) for rupture in source.iter_ruptures())
             for rupture, r_sites in rupture_sites:
                 with ctx_mon:
                     try:
