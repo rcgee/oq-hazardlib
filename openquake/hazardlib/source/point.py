@@ -79,9 +79,6 @@ class PointSource(ParametricSeismicSource):
             magnitude_scaling_relationship, rupture_aspect_ratio,
             temporal_occurrence_model)
 
-        if upper_seismogenic_depth < 0:
-            raise ValueError('upper seismogenic depth must be non-negative')
-
         if not lower_seismogenic_depth > upper_seismogenic_depth:
             raise ValueError('lower seismogenic depth must be below '
                              'upper seismogenic depth')
